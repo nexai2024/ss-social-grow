@@ -15,6 +15,7 @@ export interface PricingInnerInterface {
   public_api: boolean;
   webhooks: number;
   autoPost: boolean;
+  storage: number;
 }
 export interface PricingInterface {
   [key: string]: PricingInnerInterface;
@@ -24,9 +25,9 @@ export const pricing: PricingInterface = {
     current: 'FREE',
     month_price: 0,
     year_price: 0,
-    channel: 0,
+    channel: 2,
     image_generation_count: 0,
-    posts_per_month: 0,
+    posts_per_month: 10,
     team_members: false,
     community_features: false,
     featured_by_gitroom: false,
@@ -37,6 +38,7 @@ export const pricing: PricingInterface = {
     webhooks: 0,
     autoPost: false,
     generate_videos: 0,
+    storage: 104857600,
   },
   STANDARD: {
     current: 'STANDARD',
@@ -55,6 +57,7 @@ export const pricing: PricingInterface = {
     webhooks: 2,
     autoPost: false,
     generate_videos: 3,
+    storage: 1099511627776000,
   },
   TEAM: {
     current: 'TEAM',
@@ -73,6 +76,7 @@ export const pricing: PricingInterface = {
     webhooks: 10,
     autoPost: true,
     generate_videos: 10,
+    storage: 1099511627776000,
   },
   PRO: {
     current: 'PRO',
@@ -91,6 +95,7 @@ export const pricing: PricingInterface = {
     webhooks: 30,
     autoPost: true,
     generate_videos: 30,
+    storage: 1099511627776000,
   },
   ULTIMATE: {
     current: 'ULTIMATE',
@@ -109,5 +114,6 @@ export const pricing: PricingInterface = {
     webhooks: 10000,
     autoPost: true,
     generate_videos: 60,
-  },
+    storage: 1099511627776000,
+  }
 };

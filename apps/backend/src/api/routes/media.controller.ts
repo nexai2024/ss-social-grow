@@ -81,7 +81,7 @@ export class MediaController {
 
     const file = await this.storage.uploadSimple(image.output);
 
-    return this._mediaService.saveFile(org.id, file.split('/').pop(), file);
+    return this._mediaService.saveFile(org.id, file.split('/').pop(), file, undefined, Buffer.from(image.output.split(",")[1], "base64").length);
   }
 
   @Post('/upload-server')
@@ -97,7 +97,8 @@ export class MediaController {
       org.id,
       uploadedFile.originalname,
       uploadedFile.path,
-      originalName
+      originalName,
+      file.size
     );
   }
 
@@ -115,7 +116,8 @@ export class MediaController {
       org.id,
       name,
       process.env.CLOUDFLARE_BUCKET_URL + '/' + name,
-      originalName || undefined
+      originalName || undefined,
+      0
     );
   }
 
@@ -147,7 +149,8 @@ export class MediaController {
       org.id,
       getFile.originalname,
       getFile.path,
-      originalName
+      originalName,
+      file.size
     );
   }
 
@@ -172,7 +175,8 @@ export class MediaController {
       name,
       // @ts-ignore
       upload.Location,
-      originalName || undefined
+      originalName || undefined,
+      0
     );
 
     res.status(200).json({ ...upload, saved: saveFile });

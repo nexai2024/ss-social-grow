@@ -1,4 +1,5 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, HttpStatus } from '@nestjs/common';
+import { pricing } from '@gitroom/nestjs-libraries/database/prisma/subscriptions/pricing';
 import { MediaRepository } from '@gitroom/nestjs-libraries/database/prisma/media/media.repository';
 import { OpenaiService } from '@gitroom/nestjs-libraries/openai/openai.service';
 import { generationError } from '@gitroom/nestjs-libraries/openai/generation.error';
@@ -57,8 +58,28 @@ export class MediaService {
     }
   }
 
-  saveFile(org: string, fileName: string, filePath: string, originalName?: string) {
-    return this._mediaRepository.saveFile(org, fileName, filePath, originalName);
+  async getTotalStorage(orgId: string) {
+    return this._mediaRepository.getTotalStorage(orgId);
+  }
+
+  async saveFile(org: string, fileName: string, filePath: string, originalName?: string, fileSize: number = 0) {
+    const subscription = await this._subscriptionService.getSubscriptionByOrganizationId(org);
+    const tier = subscription?.subscriptionTier || (!process.env.STRIPE_PUBLISHABLE_KEY ? 'PRO' : 'FREE');
+    const limit = pricing[tier].storage;
+
+    if (limit && limit > 0) {
+        const currentStorage = await this.getTotalStorage(org);
+        if (currentStorage + fileSize > limit) {
+            throw new HttpException({
+                error: {
+                    code: 'billing.storage_quota',
+                    message: 'Storage quota exceeded. Free plan is limited to 100MB. Upgrade your plan for more storage.'
+                }
+            }, HttpStatus.PAYLOAD_TOO_LARGE);
+        }
+    }
+
+    return this._mediaRepository.saveFile(org, fileName, filePath, originalName, fileSize);
   }
 
   getMedia(org: string, page: number, search?: string) {
@@ -126,7 +147,7 @@ export class MediaService {
           );
 
           const file = await this.storage.uploadSimple(loadedData);
-          return this.saveFile(org.id, file.split('/').pop(), file);
+          return this.saveFile(org.id, file.split('/').pop(), file, undefined, loadedData.length);
         }
       );
     } catch (err) {
