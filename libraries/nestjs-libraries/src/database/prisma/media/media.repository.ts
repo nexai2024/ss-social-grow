@@ -6,7 +6,7 @@ import { SaveMediaInformationDto } from '@gitroom/nestjs-libraries/dtos/media/sa
 export class MediaRepository {
   constructor(private _media: PrismaRepository<'media'>) {}
 
-  saveFile(org: string, fileName: string, filePath: string, originalName?: string) {
+  saveFile(org: string, fileName: string, filePath: string, originalName?: string, fileSize: number = 0) {
     return this._media.model.media.create({
       data: {
         organization: {
@@ -17,6 +17,7 @@ export class MediaRepository {
         name: fileName,
         path: filePath,
         originalName: originalName || null,
+        fileSize,
       },
       select: {
         id: true,
@@ -70,6 +71,20 @@ export class MediaRepository {
         thumbnailTimestamp: true,
       },
     });
+  }
+
+
+  async getTotalStorage(org: string) {
+    const sum = await this._media.model.media.aggregate({
+      _sum: {
+        fileSize: true,
+      },
+      where: {
+        organizationId: org,
+        deletedAt: null,
+      },
+    });
+    return sum._sum.fileSize || 0;
   }
 
   async getMedia(org: string, page: number, search?: string) {

@@ -107,7 +107,7 @@ export const FirstBillingComponent = () => {
   );
 
   const price = useMemo(
-    () => Object.entries(pricing).filter(([key, value]) => key !== 'FREE'),
+    () => Object.entries(pricing).filter(([key, value]) => key !== 'UNREAL'),
     []
   );
 
